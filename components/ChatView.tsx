@@ -15,6 +15,7 @@ import {
   getCurrentSessionId,
   setCurrentSessionId,
 } from "@/lib/anonId";
+import { BUILD_ID } from "@/lib/buildId";
 
 type Message = {
   id: string;
@@ -212,12 +213,17 @@ export default function ChatView() {
           </span>
           <span>Nihongo Tutor</span>
         </Link>
-        <button
-          onClick={startNewChat}
-          className="text-sm text-sky-600 hover:text-sky-700 font-medium"
-        >
-          New chat
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono rounded-full bg-fuchsia-600 text-white px-2 py-0.5">
+            {BUILD_ID}
+          </span>
+          <button
+            onClick={startNewChat}
+            className="text-sm text-sky-600 hover:text-sky-700 font-medium"
+          >
+            New chat
+          </button>
+        </div>
       </header>
 
       <div

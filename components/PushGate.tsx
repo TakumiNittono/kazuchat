@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { detectStandalone } from "@/lib/pwa";
 import { finishSubscribe, isPushSupported } from "@/lib/pushClient";
 import { getAnonId } from "@/lib/anonId";
+import { BUILD_ID } from "@/lib/buildId";
 
 type Phase =
   | "loading"
@@ -109,7 +110,7 @@ export default function PushGate({ children }: { children: ReactNode }) {
       const result = await finishSubscribe(getAnonId());
       if (result === "granted") {
         setPhase("granted");
-        window.setTimeout(() => setPhase("pass"), 2500);
+        // stay on granted screen so user can verify / resend; they tap "chat"
       } else {
         setErrorMsg("購読に失敗しました。時間をおいて再試行してください。");
         setPhase("ask");
@@ -129,7 +130,10 @@ export default function PushGate({ children }: { children: ReactNode }) {
 
   return (
     <main className="flex-1 flex flex-col items-center px-6 py-10 safe-top safe-bottom bg-white">
-      <div className="w-full max-w-md mx-auto flex flex-col gap-8">
+      <div className="w-full max-w-md mx-auto flex flex-col gap-6">
+        <div className="rounded-full bg-fuchsia-600 text-white text-[11px] font-mono px-2 py-1 self-center">
+          build: {BUILD_ID}
+        </div>
         <header className="flex flex-col items-center text-center gap-4">
           <div className="w-20 h-20 rounded-3xl bg-sky-500 text-white flex items-center justify-center shadow-xl shadow-sky-500/30">
             <BellIcon />

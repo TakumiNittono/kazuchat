@@ -1,7 +1,7 @@
 // minimal service worker so the browser recognises this as an installable PWA.
 // we intentionally do NOT cache API responses (chat streams shouldn't be served stale).
 
-const CACHE = "nihongo-shell-v2";
+const CACHE = "nihongo-shell-v3-pushgate";
 const SHELL = ["/", "/chat", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -14,12 +14,11 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  // nuke every old cache aggressively — safer than relying on name prefixes.
   event.waitUntil(
     caches
       .keys()
-      .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
-      )
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
