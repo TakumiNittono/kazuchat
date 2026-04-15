@@ -15,6 +15,7 @@ import {
   getCurrentSessionId,
   setCurrentSessionId,
 } from "@/lib/anonId";
+import PushOptIn from "@/components/PushOptIn";
 
 type Message = {
   id: string;
@@ -225,6 +226,8 @@ export default function ChatView() {
         className="flex-1 overflow-y-auto px-4 py-4 scroll-smooth"
       >
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-4">
+          <PushOptIn anonUserId={anonId} />
+
           {showEmpty ? (
             <EmptyState
               onPick={(q) => {

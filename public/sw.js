@@ -1,7 +1,7 @@
 // minimal service worker so the browser recognises this as an installable PWA.
 // we intentionally do NOT cache API responses (chat streams shouldn't be served stale).
 
-const CACHE = "nihongo-shell-v1";
+const CACHE = "nihongo-shell-v2";
 const SHELL = ["/", "/chat", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -61,5 +61,41 @@ self.addEventListener("fetch", (event) => {
           })
           .catch(() => cached!),
     ),
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { title: "Nihongo Tutor", body: event.data ? event.data.text() : "" };
+  }
+  const title = payload.title || "Nihongo Tutor";
+  const options = {
+    body: payload.body || "",
+    icon: payload.icon || "/icon2",
+    badge: payload.badge || "/icon.svg",
+    data: { url: payload.url || "/chat" },
+    tag: payload.tag || "nihongo",
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/chat";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((all) => {
+      for (const client of all) {
+        try {
+          const u = new URL(client.url);
+          if (u.pathname === target) return client.focus();
+        } catch {
+          /* noop */
+        }
+      }
+      return self.clients.openWindow(target);
+    }),
   );
 });
