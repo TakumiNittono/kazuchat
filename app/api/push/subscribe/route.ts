@@ -29,14 +29,6 @@ export async function POST(req: NextRequest) {
   const userAgent = req.headers.get("user-agent") ?? null;
   const anonUserId = body.anonUserId?.trim() || null;
 
-  const { data: existing } = await supabaseAdmin
-    .from("push_subscriptions")
-    .select("endpoint, created_at")
-    .eq("endpoint", sub.endpoint)
-    .maybeSingle();
-
-  const isNew = !existing;
-
   const { error } = await supabaseAdmin.from("push_subscriptions").upsert(
     {
       endpoint: sub.endpoint,
@@ -53,32 +45,36 @@ export async function POST(req: NextRequest) {
     return new Response(`db error: ${error.message}`, { status: 500 });
   }
 
-  // only fire the welcome push the first time this endpoint registers,
-  // otherwise refreshing/reinstalling would spam the user.
-  if (isNew) {
-    const result = await sendWebPush(
-      {
-        endpoint: sub.endpoint,
-        p256dh: sub.keys.p256dh,
-        auth: sub.keys.auth,
-      },
-      {
-        title: "登録ありがとう！🎌",
-        body: "Nihongo Tutor のインストール完了。ここから日本語の質問、いつでもどうぞ。",
-        url: "/chat",
-        tag: "welcome",
-      },
-    );
+  const result = await sendWebPush(
+    {
+      endpoint: sub.endpoint,
+      p256dh: sub.keys.p256dh,
+      auth: sub.keys.auth,
+    },
+    {
+      title: "登録ありがとう！🎌",
+      body: "Nihongo Tutor のインストール完了。ここから日本語の質問、いつでもどうぞ。",
+      url: "/chat",
+      tag: "welcome",
+    },
+  );
 
-    if (!result.ok && (result.status === 404 || result.status === 410)) {
-      // subscription invalid — clean up immediately
+  if (!result.ok) {
+    if (result.status === 404 || result.status === 410) {
       await supabaseAdmin
         .from("push_subscriptions")
         .delete()
         .eq("endpoint", sub.endpoint);
-      return Response.json({ ok: false, reason: "subscription-gone" }, { status: 410 });
+      return Response.json(
+        { ok: false, reason: "subscription-gone" },
+        { status: 410 },
+      );
     }
+    return Response.json(
+      { ok: false, reason: "push-failed", status: result.status, message: result.message },
+      { status: 502 },
+    );
   }
 
-  return Response.json({ ok: true, welcomed: isNew });
+  return Response.json({ ok: true, welcomed: true });
 }

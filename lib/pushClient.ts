@@ -24,22 +24,21 @@ export function isPushSupported(): boolean {
   );
 }
 
-export async function subscribeAndRegister(
+// assumes Notification.permission is already "granted". call this AFTER
+// requesting permission inside the user gesture (see PushOptIn).
+export async function finishSubscribe(
   anonUserId: string,
 ): Promise<PushOptInResult> {
   if (!isPushSupported()) return "unsupported";
+  if (Notification.permission !== "granted") return "dismissed";
 
   const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!vapid) return "error";
+  if (!vapid) {
+    console.error("NEXT_PUBLIC_VAPID_PUBLIC_KEY missing");
+    return "error";
+  }
 
   try {
-    let permission = Notification.permission;
-    if (permission === "default") {
-      permission = await Notification.requestPermission();
-    }
-    if (permission === "denied") return "denied";
-    if (permission !== "granted") return "dismissed";
-
     const reg =
       (await navigator.serviceWorker.getRegistration("/")) ??
       (await navigator.serviceWorker.register("/sw.js", { scope: "/" }));
@@ -58,6 +57,7 @@ export async function subscribeAndRegister(
       keys?: { p256dh?: string; auth?: string };
     };
     if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
+      console.error("incomplete subscription", json);
       return "error";
     }
 
@@ -73,7 +73,11 @@ export async function subscribeAndRegister(
       }),
     });
 
-    if (!res.ok) return "error";
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error("subscribe api failed", res.status, text);
+      return "error";
+    }
     return "granted";
   } catch (err) {
     console.error("push subscribe failed", err);

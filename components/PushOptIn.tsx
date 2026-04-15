@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { detectStandalone } from "@/lib/pwa";
-import { isPushSupported, subscribeAndRegister } from "@/lib/pushClient";
-
-const DISMISS_KEY = "nihongo:push-dismissed";
+import { finishSubscribe, isPushSupported } from "@/lib/pushClient";
 
 type UiState = "hidden" | "prompt" | "working" | "granted" | "denied";
 
@@ -13,24 +10,20 @@ export default function PushOptIn({ anonUserId }: { anonUserId: string }) {
 
   useEffect(() => {
     if (!anonUserId) return;
-    if (!isPushSupported()) return;
-    // only show inside the installed app. iOS requires this; on other platforms
-    // it also keeps the browser tab uncluttered.
-    if (!detectStandalone()) return;
-
+    if (!isPushSupported()) {
+      setUi("denied");
+      return;
+    }
     const perm = Notification.permission;
     if (perm === "granted") {
-      // already granted: re-sync subscription silently (idempotent upsert).
-      void subscribeAndRegister(anonUserId);
-      setUi("hidden");
+      // already granted: re-sync subscription and re-fire welcome.
+      void finishSubscribe(anonUserId);
+      setUi("granted");
+      window.setTimeout(() => setUi("hidden"), 3000);
       return;
     }
     if (perm === "denied") {
-      setUi("hidden");
-      return;
-    }
-    if (typeof window !== "undefined" && window.localStorage.getItem(DISMISS_KEY)) {
-      setUi("hidden");
+      setUi("denied");
       return;
     }
     setUi("prompt");
@@ -38,26 +31,33 @@ export default function PushOptIn({ anonUserId }: { anonUserId: string }) {
 
   if (ui === "hidden") return null;
 
-  const enable = async () => {
+  const enable = () => {
+    // CRITICAL for iOS: Notification.requestPermission() must be called
+    // synchronously from the user gesture. No awaits before this call.
     setUi("working");
-    const result = await subscribeAndRegister(anonUserId);
-    if (result === "granted") {
-      setUi("granted");
-      window.setTimeout(() => setUi("hidden"), 3000);
-    } else if (result === "denied") {
-      setUi("denied");
-    } else {
-      setUi("prompt");
-    }
-  };
-
-  const dismiss = () => {
+    let maybePromise: Promise<NotificationPermission> | NotificationPermission;
     try {
-      window.localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      /* noop */
+      maybePromise = Notification.requestPermission();
+    } catch (err) {
+      console.error("requestPermission threw", err);
+      setUi("denied");
+      return;
     }
-    setUi("hidden");
+    Promise.resolve(maybePromise).then(async (perm) => {
+      if (perm !== "granted") {
+        setUi(perm === "denied" ? "denied" : "prompt");
+        return;
+      }
+      const result = await finishSubscribe(anonUserId);
+      if (result === "granted") {
+        setUi("granted");
+        window.setTimeout(() => setUi("hidden"), 3000);
+      } else if (result === "denied") {
+        setUi("denied");
+      } else {
+        setUi("prompt");
+      }
+    });
   };
 
   if (ui === "granted") {
@@ -70,8 +70,10 @@ export default function PushOptIn({ anonUserId }: { anonUserId: string }) {
 
   if (ui === "denied") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-        通知はブロックされています。ブラウザ/OSの設定から許可すると、ここで再度有効化できます。
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 leading-relaxed">
+        通知を有効にできません。iPhone では
+        <b>ホーム画面に追加したアプリから開いた時だけ</b>
+        通知がオンにできます。Safari タブではなく、ホーム画面の「Nihongo Tutor」アイコンから開き直してください。
       </div>
     );
   }
@@ -87,19 +89,13 @@ export default function PushOptIn({ anonUserId }: { anonUserId: string }) {
           <p className="text-xs text-sky-800/80 mt-0.5 leading-relaxed">
             インストールの確認と、今後の新機能をプッシュでお知らせします。
           </p>
-          <div className="flex gap-2 mt-3">
+          <div className="mt-3">
             <button
               onClick={enable}
               disabled={ui === "working"}
               className="rounded-xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white text-sm font-medium px-4 py-2 transition-colors"
             >
               {ui === "working" ? "設定中…" : "オンにする"}
-            </button>
-            <button
-              onClick={dismiss}
-              className="rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2 transition-colors"
-            >
-              あとで
             </button>
           </div>
         </div>
