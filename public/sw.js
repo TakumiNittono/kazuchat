@@ -1,7 +1,7 @@
 // minimal service worker so the browser recognises this as an installable PWA.
 // we intentionally do NOT cache API responses (chat streams shouldn't be served stale).
 
-const CACHE = "nihongo-shell-v3-pushgate";
+const CACHE = "nihongo-shell-v4-fix-syntax";
 const SHELL = ["/", "/chat", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -58,7 +58,7 @@ self.addEventListener("fetch", (event) => {
             }
             return res;
           })
-          .catch(() => cached!),
+          .catch(() => cached || Response.error()),
     ),
   );
 });
