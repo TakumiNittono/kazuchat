@@ -69,8 +69,8 @@ export default function PushGate({ children }: { children: ReactNode }) {
       // already granted: try to sync subscription in the background, but still
       // show a quick "granted" screen so the user can retrigger the welcome.
       void finishSubscribe(getAnonId()).then((r) => {
-        if (r !== "granted") {
-          setErrorMsg("購読の同期に失敗しました（再試行可）。");
+        if (!r.ok) {
+          setErrorMsg(`[${r.stage}] ${r.message}`);
         }
       });
       setPhase("granted");
@@ -108,11 +108,10 @@ export default function PushGate({ children }: { children: ReactNode }) {
         return;
       }
       const result = await finishSubscribe(getAnonId());
-      if (result === "granted") {
+      if (result.ok) {
         setPhase("granted");
-        // stay on granted screen so user can verify / resend; they tap "chat"
       } else {
-        setErrorMsg("購読に失敗しました。時間をおいて再試行してください。");
+        setErrorMsg(`[${result.stage}] ${result.message}`);
         setPhase("ask");
       }
     });
@@ -170,7 +169,10 @@ export default function PushGate({ children }: { children: ReactNode }) {
               {phase === "working" ? "許可を要求中…" : "通知を許可する"}
             </button>
             {errorMsg ? (
-              <p className="text-xs text-rose-600">{errorMsg}</p>
+              <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-mono text-rose-900 break-all">
+                <div className="font-semibold mb-1">失敗の詳細</div>
+                {errorMsg}
+              </div>
             ) : null}
           </section>
         ) : null}
@@ -205,8 +207,8 @@ export default function PushGate({ children }: { children: ReactNode }) {
               onClick={async () => {
                 setErrorMsg(null);
                 const r = await finishSubscribe(getAnonId());
-                if (r !== "granted") {
-                  setErrorMsg(`再送失敗: ${r}`);
+                if (!r.ok) {
+                  setErrorMsg(`[${r.stage}] ${r.message}`);
                 } else {
                   setErrorMsg("再送しました。");
                 }
