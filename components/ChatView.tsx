@@ -15,7 +15,6 @@ import {
   getCurrentSessionId,
   setCurrentSessionId,
 } from "@/lib/anonId";
-import InstallPrompt from "@/components/InstallPrompt";
 
 type Message = {
   id: string;
@@ -284,7 +283,6 @@ export default function ChatView() {
         </p>
       </form>
 
-      <InstallPrompt />
     </div>
   );
 }
