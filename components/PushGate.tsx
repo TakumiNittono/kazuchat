@@ -14,29 +14,68 @@ type Phase =
   | "unsupported"
   | "pass";
 
+type Diag = {
+  standalone: boolean;
+  pushSupported: boolean;
+  hasServiceWorker: boolean;
+  hasPushManager: boolean;
+  hasNotification: boolean;
+  permission: string;
+  ua: string;
+};
+
 export default function PushGate({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [diag, setDiag] = useState<Diag | null>(null);
 
   useEffect(() => {
-    // only gate inside the installed app.
-    if (!detectStandalone()) {
+    const standalone = detectStandalone();
+    const hasServiceWorker =
+      typeof navigator !== "undefined" && "serviceWorker" in navigator;
+    const hasPushManager =
+      typeof window !== "undefined" && "PushManager" in window;
+    const hasNotification =
+      typeof window !== "undefined" && "Notification" in window;
+    const pushSupported = isPushSupported();
+    const permission = hasNotification
+      ? Notification.permission
+      : "unavailable";
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+
+    const d: Diag = {
+      standalone,
+      pushSupported,
+      hasServiceWorker,
+      hasPushManager,
+      hasNotification,
+      permission,
+      ua,
+    };
+    setDiag(d);
+
+    // NEVER skip the gate in standalone — we want the user to see what's
+    // happening even if push isn't supported on this device.
+    if (!standalone) {
       setPhase("pass");
       return;
     }
-    if (!isPushSupported()) {
-      // installed PWA but the browser can't do push (rare). let them through.
-      setPhase("pass");
+    if (!pushSupported) {
+      setPhase("unsupported");
       return;
     }
-    const perm = Notification.permission;
-    if (perm === "granted") {
-      // silently make sure the server has our latest subscription, then pass.
-      void finishSubscribe(getAnonId());
-      setPhase("pass");
+    if (permission === "granted") {
+      // already granted: try to sync subscription in the background, but still
+      // show a quick "granted" screen so the user can retrigger the welcome.
+      void finishSubscribe(getAnonId()).then((r) => {
+        if (r !== "granted") {
+          setErrorMsg("購読の同期に失敗しました（再試行可）。");
+        }
+      });
+      setPhase("granted");
       return;
     }
-    if (perm === "denied") {
+    if (permission === "denied") {
       setPhase("denied");
       return;
     }
@@ -153,15 +192,88 @@ export default function PushGate({ children }: { children: ReactNode }) {
         ) : null}
 
         {phase === "granted" ? (
-          <section className="rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-5">
-            <p className="font-medium text-emerald-900">通知をオンにしました</p>
-            <p className="text-sm text-emerald-800 mt-1 leading-relaxed">
-              登録ありがとう通知を送信しました。数秒以内にロック画面に表示されます。
+          <section className="rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-5 flex flex-col gap-3">
+            <p className="font-medium text-emerald-900">通知は許可済み</p>
+            <p className="text-sm text-emerald-800 leading-relaxed">
+              登録通知を送信しました。ロック画面を確認してみてください。
             </p>
+            <button
+              onClick={async () => {
+                setErrorMsg(null);
+                const r = await finishSubscribe(getAnonId());
+                if (r !== "granted") {
+                  setErrorMsg(`再送失敗: ${r}`);
+                } else {
+                  setErrorMsg("再送しました。");
+                }
+              }}
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 text-sm"
+            >
+              通知を再送する
+            </button>
+            <button
+              onClick={() => setPhase("pass")}
+              className="rounded-xl bg-white border border-emerald-300 text-emerald-800 font-medium px-4 py-2 text-sm"
+            >
+              チャットへ進む
+            </button>
+            {errorMsg ? (
+              <p className="text-xs text-emerald-800">{errorMsg}</p>
+            ) : null}
           </section>
         ) : null}
+
+        {phase === "unsupported" ? (
+          <section className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-5">
+            <p className="font-medium text-amber-900">
+              このデバイスでは通知が使えません
+            </p>
+            <p className="text-sm text-amber-900/90 mt-1 leading-relaxed">
+              iPhone の場合、<b>iOS 16.4 以降</b>
+              かつホーム画面に追加したアプリからの起動が必要です。下の診断を見て、iOS バージョンを確認してください。
+            </p>
+            <button
+              onClick={() => setPhase("pass")}
+              className="mt-4 w-full rounded-2xl bg-white border border-amber-300 text-amber-900 font-medium py-3 text-sm"
+            >
+              そのままチャットへ進む
+            </button>
+          </section>
+        ) : null}
+
+        {diag ? <DiagBox diag={diag} /> : null}
       </div>
     </main>
+  );
+}
+
+function DiagBox({ diag }: { diag: Diag }) {
+  const copyDiag = async () => {
+    try {
+      await navigator.clipboard?.writeText(JSON.stringify(diag, null, 2));
+    } catch {
+      /* noop */
+    }
+  };
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-mono text-slate-600 leading-relaxed">
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-semibold text-slate-700">diagnostic</span>
+        <button
+          onClick={copyDiag}
+          className="text-[10px] text-sky-600 underline"
+        >
+          copy
+        </button>
+      </div>
+      <div>standalone: {String(diag.standalone)}</div>
+      <div>pushSupported: {String(diag.pushSupported)}</div>
+      <div>serviceWorker: {String(diag.hasServiceWorker)}</div>
+      <div>PushManager: {String(diag.hasPushManager)}</div>
+      <div>Notification: {String(diag.hasNotification)}</div>
+      <div>permission: {diag.permission}</div>
+      <div className="mt-1 break-all">ua: {diag.ua.slice(0, 120)}</div>
+    </section>
   );
 }
 
