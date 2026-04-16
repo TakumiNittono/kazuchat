@@ -110,18 +110,18 @@ function InstallScreen({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/icon-192.png"
-            alt="Nihongo Tutor"
+            alt="Chat with Marin"
             width={80}
             height={80}
             className="w-20 h-20 rounded-3xl shadow-xl shadow-sky-500/30"
           />
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Install Nihongo Tutor
+              Install &ldquo;Chat with Marin&rdquo;
             </h1>
             <p className="text-slate-500 text-sm mt-2 leading-relaxed">
               This app only works when installed. It&apos;s a one-time setup
-              and takes 10 seconds.
+              and takes 10 seconds!
             </p>
           </div>
         </header>
@@ -190,7 +190,7 @@ const IOS_VIDEO_STEPS = [
   },
   {
     title: "Tap \u201cAdd\u201d",
-    body: "Nihongo Tutor now lives on your home screen.",
+    body: "Chat with Marin now lives on your home screen.",
     src: "/videos/install-step-3.mp4",
   },
 ];
@@ -313,7 +313,7 @@ function NativeInstallCard({
       <div className="px-5 py-4">
         <p className="text-slate-700 text-sm leading-relaxed">
           Tap the button below. Your browser will show an install prompt &mdash;
-          confirm to add Nihongo Tutor to your
+          confirm to add Chat with Marin to your
           {platform === "android" ? " home screen" : " apps"}.
         </p>
         <button
@@ -322,7 +322,7 @@ function NativeInstallCard({
           className="mt-4 w-full rounded-2xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-200 disabled:text-slate-500 transition-colors text-white font-medium py-4 shadow-lg shadow-sky-500/30 disabled:shadow-none"
         >
           {canNativeInstall
-            ? "Install Nihongo Tutor"
+            ? "Install Chat with Marin"
             : "Preparing install\u2026"}
         </button>
         {!canNativeInstall ? (
@@ -350,27 +350,20 @@ function InAppBrowserCard() {
       /* noop */
     }
   };
-  const features = [
-    "Friendly AI Japanese tutor",
-    "Instant push notifications",
-    "Private & secure",
-  ];
   return (
     <>
       <section className="rounded-3xl border border-amber-300 bg-amber-50 overflow-hidden shadow-sm">
-        <div className="px-5 pt-5 pb-4">
+        <div className="px-5 pt-5 pb-5">
           <p className="font-semibold text-amber-900 text-base leading-snug">
             Open this page in your main browser
           </p>
           <p className="text-sm text-amber-800 mt-1.5 leading-relaxed">
-            In-app browsers (Instagram, Line, Facebook, etc.) can&apos;t install
-            apps. Tap the share / &middot;&middot;&middot; button below, then
-            choose <b>Open in Safari</b> or <b>Open in Chrome</b>.
+            In-app browsers (Instagram, YouTube, etc.) can&apos;t install apps.
           </p>
 
-          <div className="mt-4 flex flex-col items-center gap-1">
-            <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-white font-bold text-sm shadow-lg shadow-red-600/30">
-              Tap Here
+          <div className="mt-5 flex flex-col items-center gap-1">
+            <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-white font-extrabold text-sm shadow-lg shadow-red-600/30">
+              TAP HERE!
             </span>
             <svg
               viewBox="0 0 24 48"
@@ -382,34 +375,30 @@ function InAppBrowserCard() {
             </svg>
           </div>
 
+          <p className="mt-3 text-sm text-amber-900 leading-relaxed text-center">
+            Tap the <b>&middot;&middot;&middot;</b> button at the bottom left,
+            <br />
+            then choose <b>Open in Safari</b> or <b>Open in Chrome</b>.
+          </p>
+        </div>
+
+        <div className="border-t border-amber-200 bg-white px-5 py-4">
+          <p className="text-sm font-medium text-slate-900">
+            If that doesn&apos;t work:
+          </p>
           <button
             onClick={handleCopy}
-            className="mt-4 w-full rounded-2xl bg-amber-900 text-amber-50 font-medium py-3 text-sm active:bg-amber-950"
+            className="mt-2 w-full rounded-2xl bg-slate-900 text-white font-medium py-3 text-sm active:bg-slate-950"
           >
             {copied ? "Copied!" : "Copy link"}
           </button>
+          <p className="mt-2 text-xs text-slate-500">
+            Then paste it in Safari or Chrome.
+          </p>
         </div>
-
-        <ul className="divide-y divide-amber-100 bg-white">
-          {features.map((f) => (
-            <li key={f} className="flex items-center gap-3 px-5 py-3">
-              <span className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-3.5 h-3.5"
-                  aria-hidden="true"
-                >
-                  <path d="M9.707 17.707a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L9 15.586l9.293-9.293a1 1 0 0 1 1.414 1.414l-10 10Z" />
-                </svg>
-              </span>
-              <span className="text-sm text-slate-700">{f}</span>
-            </li>
-          ))}
-        </ul>
       </section>
 
-      <FloatingArrow anchor="right" label="Tap here ↓" />
+      <FloatingArrow anchor="left" label="Tap here ↓" />
     </>
   );
 }
@@ -418,13 +407,15 @@ function FloatingArrow({
   anchor,
   label,
 }: {
-  anchor: "right" | "center";
+  anchor: "right" | "left" | "center";
   label: string;
 }) {
   const positionClass =
     anchor === "right"
       ? "bottom-2 right-4 items-end"
-      : "bottom-2 left-1/2 -translate-x-1/2 items-center";
+      : anchor === "left"
+        ? "bottom-2 left-4 items-start"
+        : "bottom-2 left-1/2 -translate-x-1/2 items-center";
   return (
     <div
       className={`pointer-events-none fixed z-40 flex flex-col gap-1 ${positionClass}`}
@@ -471,7 +462,7 @@ function JustInstalledCard() {
     <section className="rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4">
       <p className="font-medium text-emerald-900">Install complete</p>
       <p className="text-sm text-emerald-800 mt-1 leading-relaxed">
-        Open Nihongo Tutor from your home screen (or app menu) to start
+        Open Chat with Marin from your home screen (or app menu) to start
         chatting. This tab can now be closed.
       </p>
     </section>
@@ -479,21 +470,24 @@ function JustInstalledCard() {
 }
 
 function WhyInstall() {
-  const points = [
-    "One-tap to launch, no URL to remember",
-    "Opens fullscreen, no browser chrome",
-    "Saves your chat even when offline",
+  const perks = [
+    "AI-Powered Japanese Tutor (24/7 Japanese Help)",
+    "15+ Premium Learning Resources",
+    "Instant Access to All Bonuses",
   ];
   return (
-    <section>
-      <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-        Why install
+    <section className="rounded-3xl border border-slate-200 bg-gradient-to-b from-sky-50 to-white px-5 py-5 text-center">
+      <p className="text-xs font-bold tracking-[0.18em] text-sky-600">
+        ONE STEP AWAY!
       </p>
-      <ul className="space-y-2">
-        {points.map((p) => (
+      <p className="mt-1 font-semibold text-slate-900">
+        Complete the install to get&hellip;
+      </p>
+      <ul className="mt-4 space-y-2.5 text-left">
+        {perks.map((p) => (
           <li
             key={p}
-            className="flex items-start gap-2 text-sm text-slate-600"
+            className="flex items-start gap-2 text-sm text-slate-700"
           >
             <CheckIcon />
             <span>{p}</span>

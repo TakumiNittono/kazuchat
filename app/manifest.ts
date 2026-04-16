@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Nihongo Tutor",
-    short_name: "Nihongo",
-    description: "A friendly AI Japanese-language tutor.",
+    name: "Chat with Marin",
+    short_name: "Marin",
+    description: "Friendly AI Japanese tutor — chat with Marin.",
     start_url: "/chat",
     scope: "/",
     display: "standalone",

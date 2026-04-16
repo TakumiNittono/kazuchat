@@ -23,13 +23,13 @@ export default function Home() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/icon-192.png"
-            alt="Nihongo Tutor"
+            alt="Chat with Marin"
             width={72}
             height={72}
             className="w-[72px] h-[72px] rounded-2xl shadow-lg shadow-sky-500/30"
           />
           <h1 className="text-3xl font-semibold tracking-tight">
-            Nihongo Tutor
+            Chat with Marin
           </h1>
           <p className="text-slate-500 text-base leading-relaxed">
             A friendly AI Japanese teacher. Ask any question about Japanese and

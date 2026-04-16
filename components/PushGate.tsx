@@ -184,7 +184,7 @@ export default function PushGate({ children }: { children: ReactNode }) {
             </p>
             <ol className="text-sm text-amber-900/90 mt-2 space-y-1 list-decimal pl-5 leading-relaxed">
               <li>iPhone の「設定」アプリを開く</li>
-              <li>下にスクロールして「Nihongo Tutor」をタップ</li>
+              <li>下にスクロールして「Chat with Marin」をタップ</li>
               <li>「通知」→「通知を許可」をオン</li>
               <li>このアプリに戻って再起動</li>
             </ol>

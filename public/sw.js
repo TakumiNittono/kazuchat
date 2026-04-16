@@ -1,8 +1,8 @@
 // minimal service worker so the browser recognises this as an installable PWA.
 // we intentionally do NOT cache API responses (chat streams shouldn't be served stale).
 
-const CACHE = "nihongo-shell-v4-fix-syntax";
-const SHELL = ["/", "/chat", "/icon.svg"];
+const CACHE = "marin-shell-v5-rename";
+const SHELL = ["/", "/chat", "/icon-192.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -68,15 +68,15 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data ? event.data.json() : {};
   } catch {
-    payload = { title: "Nihongo Tutor", body: event.data ? event.data.text() : "" };
+    payload = { title: "Chat with Marin", body: event.data ? event.data.text() : "" };
   }
-  const title = payload.title || "Nihongo Tutor";
+  const title = payload.title || "Chat with Marin";
   const options = {
     body: payload.body || "",
-    icon: payload.icon || "/icon2",
-    badge: payload.badge || "/icon.svg",
+    icon: payload.icon || "/icon-192.png",
+    badge: payload.badge || "/icon-192.png",
     data: { url: payload.url || "/chat" },
-    tag: payload.tag || "nihongo",
+    tag: payload.tag || "marin",
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });

@@ -9,14 +9,14 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Nihongo Tutor",
+  title: "Chat with Marin",
   description:
-    "A friendly Japanese-language tutor chatbot. Ask anything about kanji, grammar, vocabulary, or example sentences.",
-  applicationName: "Nihongo Tutor",
+    "Friendly AI Japanese tutor — ask anything about kanji, grammar, vocabulary, or example sentences.",
+  applicationName: "Chat with Marin",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Nihongo Tutor",
+    title: "Chat with Marin",
     statusBarStyle: "default",
   },
 };

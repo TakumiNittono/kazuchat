@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     },
     {
       title: "登録ありがとう！🎌",
-      body: "Nihongo Tutor のインストール完了。ここから日本語の質問、いつでもどうぞ。",
+      body: "Chat with Marin のインストール完了。ここから日本語の質問、いつでもどうぞ。",
       url: "/chat",
       tag: "welcome",
     },

@@ -208,10 +208,15 @@ export default function ChatView() {
           href="/"
           className="flex items-center gap-2 text-slate-900 font-semibold"
         >
-          <span className="w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center text-sm font-bold">
-            日
-          </span>
-          <span>Nihongo Tutor</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon-192.png"
+            alt="Chat with Marin"
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded-lg"
+          />
+          <span>Chat with Marin</span>
         </Link>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-mono rounded-full bg-fuchsia-600 text-white px-2 py-0.5">
