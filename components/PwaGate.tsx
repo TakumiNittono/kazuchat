@@ -376,7 +376,7 @@ function InAppBrowserCard() {
           </div>
 
           <p className="mt-3 text-sm text-amber-900 leading-relaxed text-center">
-            Tap the <b>&middot;&middot;&middot;</b> button at the bottom left,
+            Tap the <b>&middot;&middot;&middot;</b> button at the bottom right,
             <br />
             then choose <b>Open in Safari</b> or <b>Open in Chrome</b>.
           </p>
@@ -398,7 +398,7 @@ function InAppBrowserCard() {
         </div>
       </section>
 
-      <FloatingArrow anchor="left" label="Tap here ↓" />
+      <FloatingArrow anchor="right" label="Tap here ↓" />
     </>
   );
 }
