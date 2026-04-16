@@ -20,9 +20,14 @@ export default function Home() {
     <main className="flex-1 flex flex-col items-center justify-between px-6 py-10 safe-top safe-bottom">
       <div className="w-full max-w-md flex flex-col items-center text-center gap-10 mt-6">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-16 h-16 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-2xl font-bold shadow-lg shadow-sky-500/30">
-            日
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon-192.png"
+            alt="Nihongo Tutor"
+            width={72}
+            height={72}
+            className="w-[72px] h-[72px] rounded-2xl shadow-lg shadow-sky-500/30"
+          />
           <h1 className="text-3xl font-semibold tracking-tight">
             Nihongo Tutor
           </h1>

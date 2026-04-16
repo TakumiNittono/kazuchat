@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   BeforeInstallPromptEvent,
   detectPlatform,
@@ -107,9 +107,14 @@ function InstallScreen({
     <main className="flex-1 flex flex-col items-center px-6 py-10 safe-top safe-bottom bg-white">
       <div className="w-full max-w-md mx-auto flex flex-col gap-8">
         <header className="flex flex-col items-center text-center gap-4">
-          <div className="w-20 h-20 rounded-3xl bg-sky-500 text-white flex items-center justify-center text-3xl font-bold shadow-xl shadow-sky-500/30">
-            日
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon-192.png"
+            alt="Nihongo Tutor"
+            width={80}
+            height={80}
+            className="w-20 h-20 rounded-3xl shadow-xl shadow-sky-500/30"
+          />
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
               Install Nihongo Tutor
@@ -156,7 +161,7 @@ function PlatformInstructions({
   }
 
   if (platform === "ios") {
-    return <IosInstructions />;
+    return <IosVideoSteps />;
   }
 
   if (platform === "android" || platform === "desktop") {
@@ -172,50 +177,106 @@ function PlatformInstructions({
   return <GenericInstructions />;
 }
 
-function IosInstructions() {
-  const steps = [
-    {
-      title: "Open the Share menu",
-      body: "Tap the Share icon at the bottom of Safari.",
-      visual: <ShareIcon />,
-    },
-    {
-      title: "Scroll down, tap \u201cAdd to Home Screen\u201d",
-      body: "You may have to scroll past AirDrop and Copy.",
-      visual: <AddToHomeIcon />,
-    },
-    {
-      title: "Tap \u201cAdd\u201d in the top right",
-      body: "Nihongo Tutor now lives on your home screen.",
-      visual: <PlusIcon />,
-    },
-  ];
+const IOS_VIDEO_STEPS = [
+  {
+    title: "Open the Share menu",
+    body: "Tap the Share icon at the bottom of Safari.",
+    src: "/videos/install-step-1.mp4",
+  },
+  {
+    title: "Tap \u201cAdd to Home Screen\u201d",
+    body: "Scroll past AirDrop and Copy if you have to.",
+    src: "/videos/install-step-2.mp4",
+  },
+  {
+    title: "Tap \u201cAdd\u201d",
+    body: "Nihongo Tutor now lives on your home screen.",
+    src: "/videos/install-step-3.mp4",
+  },
+];
+
+function IosVideoSteps() {
+  const [idx, setIdx] = useState(0);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const step = IOS_VIDEO_STEPS[idx];
+  const total = IOS_VIDEO_STEPS.length;
+  const isLast = idx === total - 1;
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    v.play().catch(() => {
+      /* autoplay may be blocked until user interaction */
+    });
+  }, [idx]);
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white overflow-hidden">
-      <div className="px-5 pt-5 pb-3">
-        <div className="flex items-center gap-2 text-xs font-medium text-sky-600">
+      <div className="px-5 pt-4 pb-3 flex items-center justify-between">
+        <span className="flex items-center gap-2 text-xs font-medium text-sky-600">
           <AppleGlyph /> iPhone &middot; Safari
+        </span>
+        <span className="text-xs font-medium text-slate-400">
+          Step {idx + 1} / {total}
+        </span>
+      </div>
+
+      <div className="relative bg-slate-900 aspect-[9/16] max-h-[60vh] mx-auto w-full">
+        <video
+          ref={videoRef}
+          key={step.src}
+          src={step.src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-contain bg-slate-900"
+        />
+      </div>
+
+      <div className="px-5 py-4">
+        <p className="font-semibold text-slate-900">
+          {idx + 1}. {step.title}
+        </p>
+        <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+          {step.body}
+        </p>
+
+        <div className="mt-4 flex items-center gap-2">
+          {IOS_VIDEO_STEPS.map((_, i) => (
+            <span
+              key={i}
+              className={
+                "h-1.5 flex-1 rounded-full " +
+                (i <= idx ? "bg-sky-500" : "bg-slate-200")
+              }
+            />
+          ))}
+        </div>
+
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={() => setIdx((i) => Math.max(0, i - 1))}
+            disabled={idx === 0}
+            className="flex-1 rounded-2xl bg-slate-100 text-slate-700 font-medium py-3 text-sm disabled:opacity-40"
+          >
+            Back
+          </button>
+          <button
+            onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
+            disabled={isLast}
+            className="flex-[2] rounded-2xl bg-sky-500 hover:bg-sky-600 active:bg-sky-700 transition-colors text-white font-semibold py-3 text-sm shadow-lg shadow-sky-500/30 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
+          >
+            {isLast ? "Follow the steps above" : "Next"}
+          </button>
         </div>
       </div>
-      <ol className="divide-y divide-slate-100">
-        {steps.map((s, i) => (
-          <li key={s.title} className="flex gap-4 px-5 py-4">
-            <div className="w-8 h-8 shrink-0 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center font-semibold">
-              {i + 1}
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-slate-900">{s.title}</p>
-              <p className="text-sm text-slate-500 mt-0.5">{s.body}</p>
-            </div>
-            <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600">
-              {s.visual}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <div className="px-5 py-4 bg-slate-50 text-xs text-slate-500">
-        If you don&apos;t see the Share button, make sure you&apos;re using
-        Safari &mdash; not Chrome or an in-app browser.
+
+      <div className="px-5 py-3 bg-slate-50 text-xs text-slate-500">
+        Using Chrome or an in-app browser? Open this page in{" "}
+        <b>Safari</b> first.
       </div>
     </section>
   );
@@ -274,34 +335,92 @@ function NativeInstallCard({
 }
 
 function InAppBrowserCard() {
+  const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     if (typeof navigator === "undefined") return;
     try {
       await navigator.clipboard?.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
     } catch {
       /* noop */
     }
   };
+  const features = [
+    "Friendly AI Japanese tutor",
+    "Instant push notifications",
+    "Private & secure",
+  ];
   return (
-    <section className="rounded-3xl border border-amber-200 bg-amber-50 overflow-hidden">
-      <div className="px-5 py-4">
-        <p className="font-medium text-amber-900">
-          Open this page in your main browser
-        </p>
-        <p className="text-sm text-amber-800 mt-1 leading-relaxed">
-          In-app browsers (Instagram, Line, Facebook, etc.) can&apos;t install
-          apps. Tap the <b>&middot;&middot;&middot;</b> or share button in your
-          current app and choose <b>Open in Safari</b> or{" "}
-          <b>Open in Chrome</b>, then come back here.
-        </p>
-        <button
-          onClick={handleCopy}
-          className="mt-3 w-full rounded-2xl bg-amber-900 text-amber-50 font-medium py-3 text-sm"
+    <>
+      <section className="rounded-3xl border border-amber-300 bg-amber-50 overflow-hidden shadow-sm">
+        <div className="px-5 pt-5 pb-4">
+          <p className="font-semibold text-amber-900 text-base leading-snug">
+            Open this page in your main browser
+          </p>
+          <p className="text-sm text-amber-800 mt-1.5 leading-relaxed">
+            In-app browsers (Instagram, Line, Facebook, etc.) can&apos;t install
+            apps. Tap the share / &middot;&middot;&middot; button below, then
+            choose <b>Open in Safari</b> or <b>Open in Chrome</b>.
+          </p>
+
+          <div className="mt-4 flex flex-col items-center gap-1">
+            <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-white font-bold text-sm shadow-lg shadow-red-600/30">
+              Tap Here
+            </span>
+            <svg
+              viewBox="0 0 24 48"
+              className="w-6 h-10 text-red-600 animate-bounce"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M10 0h4v32h6L12 48 4 32h6z" />
+            </svg>
+          </div>
+
+          <button
+            onClick={handleCopy}
+            className="mt-4 w-full rounded-2xl bg-amber-900 text-amber-50 font-medium py-3 text-sm active:bg-amber-950"
+          >
+            {copied ? "Copied!" : "Copy link"}
+          </button>
+        </div>
+
+        <ul className="divide-y divide-amber-100 bg-white">
+          {features.map((f) => (
+            <li key={f} className="flex items-center gap-3 px-5 py-3">
+              <span className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-3.5 h-3.5"
+                  aria-hidden="true"
+                >
+                  <path d="M9.707 17.707a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L9 15.586l9.293-9.293a1 1 0 0 1 1.414 1.414l-10 10Z" />
+                </svg>
+              </span>
+              <span className="text-sm text-slate-700">{f}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div
+        className="pointer-events-none fixed bottom-2 right-4 z-40 flex flex-col items-end gap-1"
+        aria-hidden="true"
+      >
+        <span className="bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-lg shadow-red-600/40">
+          Tap here ↓
+        </span>
+        <svg
+          viewBox="0 0 24 48"
+          className="w-7 h-12 text-red-600 drop-shadow-[0_2px_3px_rgba(220,38,38,0.4)] animate-bounce"
+          fill="currentColor"
         >
-          Copy link
-        </button>
+          <path d="M10 0h4v32h6L12 48 4 32h6z" />
+        </svg>
       </div>
-    </section>
+    </>
   );
 }
 
@@ -362,57 +481,6 @@ function WhyInstall() {
         ))}
       </ul>
     </section>
-  );
-}
-
-function ShareIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-    >
-      <path d="M12 3v12" />
-      <path d="M8 7l4-4 4 4" />
-      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-    </svg>
-  );
-}
-
-function AddToHomeIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-    >
-      <rect x="4" y="4" width="16" height="16" rx="3" />
-      <path d="M12 8v8" />
-      <path d="M8 12h8" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="w-5 h-5"
-    >
-      <path d="M12 5a1 1 0 0 1 1 1v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 1 1 0-2h5V6a1 1 0 0 1 1-1Z" />
-    </svg>
   );
 }
 
