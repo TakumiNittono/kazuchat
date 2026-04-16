@@ -278,6 +278,10 @@ function IosVideoSteps() {
         Using Chrome or an in-app browser? Open this page in{" "}
         <b>Safari</b> first.
       </div>
+
+      {idx === 0 ? (
+        <FloatingArrow anchor="center" label="Tap the Share button ↓" />
+      ) : null}
     </section>
   );
 }
@@ -405,22 +409,38 @@ function InAppBrowserCard() {
         </ul>
       </section>
 
-      <div
-        className="pointer-events-none fixed bottom-2 right-4 z-40 flex flex-col items-end gap-1"
-        aria-hidden="true"
-      >
-        <span className="bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-lg shadow-red-600/40">
-          Tap here ↓
-        </span>
-        <svg
-          viewBox="0 0 24 48"
-          className="w-7 h-12 text-red-600 drop-shadow-[0_2px_3px_rgba(220,38,38,0.4)] animate-bounce"
-          fill="currentColor"
-        >
-          <path d="M10 0h4v32h6L12 48 4 32h6z" />
-        </svg>
-      </div>
+      <FloatingArrow anchor="right" label="Tap here ↓" />
     </>
+  );
+}
+
+function FloatingArrow({
+  anchor,
+  label,
+}: {
+  anchor: "right" | "center";
+  label: string;
+}) {
+  const positionClass =
+    anchor === "right"
+      ? "bottom-2 right-4 items-end"
+      : "bottom-2 left-1/2 -translate-x-1/2 items-center";
+  return (
+    <div
+      className={`pointer-events-none fixed z-40 flex flex-col gap-1 ${positionClass}`}
+      aria-hidden="true"
+    >
+      <span className="bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-lg shadow-red-600/40">
+        {label}
+      </span>
+      <svg
+        viewBox="0 0 24 48"
+        className="w-7 h-12 text-red-600 drop-shadow-[0_2px_3px_rgba(220,38,38,0.4)] animate-bounce"
+        fill="currentColor"
+      >
+        <path d="M10 0h4v32h6L12 48 4 32h6z" />
+      </svg>
+    </div>
   );
 }
 
