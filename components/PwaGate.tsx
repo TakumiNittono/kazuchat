@@ -280,7 +280,7 @@ function IosVideoSteps() {
       </div>
 
       {idx === 0 ? (
-        <FloatingArrow anchor="center" label="Tap the Share button ↓" />
+        <FloatingArrow anchor="right" label="Tap the Share button ↓" />
       ) : null}
     </section>
   );
