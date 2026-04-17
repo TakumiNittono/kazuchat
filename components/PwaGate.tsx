@@ -177,21 +177,37 @@ function PlatformInstructions({
   return <GenericInstructions />;
 }
 
-const IOS_VIDEO_STEPS = [
+type InstallStep = {
+  title: string;
+  body: string;
+  src: string;
+  kind: "video" | "image";
+};
+
+const IOS_VIDEO_STEPS: InstallStep[] = [
   {
     title: "Open the Share menu",
     body: "Tap the Share icon at the bottom of Safari.",
     src: "/videos/install-step-1.mp4",
+    kind: "video",
   },
   {
     title: "Tap \u201cAdd to Home Screen\u201d",
     body: "Scroll past AirDrop and Copy if you have to.",
     src: "/videos/install-step-2.mp4",
+    kind: "video",
   },
   {
     title: "Tap \u201cAdd\u201d",
     body: "Chat with Marin now lives on your home screen.",
     src: "/videos/install-step-3.mp4",
+    kind: "video",
+  },
+  {
+    title: "Open the app & allow notifications",
+    body: "Tap the new Chat with Marin icon on your home screen, then tap Continue when iOS asks about notifications.",
+    src: "/videos/install-step-4.webp",
+    kind: "image",
   },
 ];
 
@@ -204,12 +220,12 @@ function IosVideoSteps() {
 
   useEffect(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || step.kind !== "video") return;
     v.currentTime = 0;
     v.play().catch(() => {
       /* autoplay may be blocked until user interaction */
     });
-  }, [idx]);
+  }, [idx, step.kind]);
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white overflow-hidden">
@@ -223,17 +239,27 @@ function IosVideoSteps() {
       </div>
 
       <div className="relative bg-slate-900 aspect-[9/16] max-h-[60vh] mx-auto w-full">
-        <video
-          ref={videoRef}
-          key={step.src}
-          src={step.src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-contain bg-slate-900"
-        />
+        {step.kind === "video" ? (
+          <video
+            ref={videoRef}
+            key={step.src}
+            src={step.src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-contain bg-slate-900"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={step.src}
+            src={step.src}
+            alt={step.title}
+            className="absolute inset-0 w-full h-full object-contain bg-slate-900"
+          />
+        )}
       </div>
 
       <div className="px-5 py-4">
@@ -361,18 +387,16 @@ function InAppBrowserCard() {
             In-app browsers (Instagram, YouTube, etc.) can&apos;t install apps.
           </p>
 
-          <div className="mt-5 flex flex-col items-center gap-1">
-            <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-white font-extrabold text-sm shadow-lg shadow-red-600/30">
-              TAP HERE!
-            </span>
-            <svg
-              viewBox="0 0 24 48"
-              className="w-6 h-10 text-red-600 animate-bounce"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M10 0h4v32h6L12 48 4 32h6z" />
-            </svg>
+          <div className="mt-4 rounded-xl overflow-hidden bg-black">
+            <video
+              src="/videos/open-in-browser.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="w-full h-auto block"
+            />
           </div>
 
           <p className="mt-3 text-sm text-amber-900 leading-relaxed text-center">
