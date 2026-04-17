@@ -1,7 +1,7 @@
 // minimal service worker so the browser recognises this as an installable PWA.
 // we intentionally do NOT cache API responses (chat streams shouldn't be served stale).
 
-const CACHE = "marin-shell-v5-rename";
+const CACHE = "marin-shell-v6-cta";
 const SHELL = ["/", "/chat", "/icon-192.png"];
 
 self.addEventListener("install", (event) => {
