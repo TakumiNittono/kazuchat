@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
 import { supabaseAdmin, type ChatMessageRow } from "@/lib/supabaseAdmin";
-import { SYSTEM_PROMPT } from "@/prompts/system";
+import { getPrompt } from "@/lib/promptStore";
 import {
   CTA_MESSAGE,
   CTA_TRIGGER_USER_MESSAGE_COUNT,
@@ -78,8 +78,10 @@ export async function POST(req: NextRequest) {
     .order("created_at", { ascending: true })
     .limit(MAX_HISTORY);
 
+  const systemPrompt = await getPrompt("system");
+
   const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
+    { role: "system" as const, content: systemPrompt },
     ...((history ?? []) as Pick<ChatMessageRow, "role" | "content">[]).map(
       (m) => ({
         role: m.role as "user" | "assistant" | "system",

@@ -150,10 +150,18 @@ export default async function AdminPage() {
         <div>
           <h1 className="text-lg font-semibold">Chat with Marin &mdash; Admin</h1>
           <p className="text-xs text-slate-500">
-            read-only dashboard &middot; {formatTime(new Date().toISOString())}
+            {formatTime(new Date().toISOString())}
           </p>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/prompts"
+            className="text-sm text-sky-600 hover:text-sky-700 font-medium"
+          >
+            Prompt settings
+          </Link>
+          <LogoutButton />
+        </div>
       </header>
 
       <div className="max-w-6xl mx-auto p-6 space-y-8">
