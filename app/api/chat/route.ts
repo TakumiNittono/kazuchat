@@ -197,5 +197,5 @@ async function evaluateCtaTrigger(anonUserId: string): Promise<boolean> {
     console.error("count user msgs failed", error);
     return false;
   }
-  return (count ?? 0) === CTA_TRIGGER_USER_MESSAGE_COUNT;
+  return (count ?? 0) >= CTA_TRIGGER_USER_MESSAGE_COUNT;
 }
