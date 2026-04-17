@@ -4,6 +4,10 @@ import { cookies } from "next/headers";
 const COOKIE_NAME = "admin_auth";
 const COOKIE_MAX_AGE = 60 * 60 * 8;
 
+export function isAdminConfigured(): boolean {
+  return Boolean(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD);
+}
+
 function requireSecret(): string {
   const secret = process.env.ADMIN_PASSWORD;
   if (!secret) {
@@ -13,15 +17,28 @@ function requireSecret(): string {
 }
 
 function tokenFor(secret: string): string {
-  return createHmac("sha256", secret).update("admin").digest("hex");
+  return createHmac("sha256", secret)
+    .update(`admin:${process.env.ADMIN_EMAIL ?? ""}`)
+    .digest("hex");
 }
 
-export function verifyPassword(input: string): boolean {
-  const secret = requireSecret();
-  const a = Buffer.from(input);
-  const b = Buffer.from(secret);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
+function safeEqualStr(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) return false;
+  return timingSafeEqual(ba, bb);
+}
+
+export function verifyCredentials(email: string, password: string): boolean {
+  const expectedEmail = process.env.ADMIN_EMAIL;
+  const expectedPw = process.env.ADMIN_PASSWORD;
+  if (!expectedEmail || !expectedPw) return false;
+  const emailOk = safeEqualStr(
+    email.trim().toLowerCase(),
+    expectedEmail.trim().toLowerCase(),
+  );
+  const pwOk = safeEqualStr(password, expectedPw);
+  return emailOk && pwOk;
 }
 
 export function buildAdminCookie() {
@@ -50,13 +67,10 @@ export function clearAdminCookie() {
 }
 
 export async function isAdminAuthed(): Promise<boolean> {
-  if (!process.env.ADMIN_PASSWORD) return false;
+  if (!isAdminConfigured()) return false;
   const store = await cookies();
   const got = store.get(COOKIE_NAME)?.value;
   if (!got) return false;
-  const expected = tokenFor(process.env.ADMIN_PASSWORD);
-  const a = Buffer.from(got);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
+  const expected = tokenFor(process.env.ADMIN_PASSWORD!);
+  return safeEqualStr(got, expected);
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { isAdminAuthed } from "@/lib/adminAuth";
+import { isAdminAuthed, isAdminConfigured } from "@/lib/adminAuth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import LogoutButton from "../../LogoutButton";
 
@@ -27,7 +27,7 @@ export default async function SessionDetailPage({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  if (!process.env.ADMIN_PASSWORD) redirect("/admin");
+  if (!isAdminConfigured()) redirect("/admin");
   const authed = await isAdminAuthed();
   if (!authed) redirect("/admin");
 

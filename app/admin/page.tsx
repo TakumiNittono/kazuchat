@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { isAdminAuthed } from "@/lib/adminAuth";
+import { isAdminAuthed, isAdminConfigured } from "@/lib/adminAuth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import LoginForm from "./LoginForm";
 import LogoutButton from "./LogoutButton";
@@ -118,12 +118,13 @@ function shortId(id: string) {
 }
 
 export default async function AdminPage() {
-  if (!process.env.ADMIN_PASSWORD) {
+  if (!isAdminConfigured()) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
         <div className="max-w-md text-center space-y-3">
           <h1 className="text-xl font-semibold">Admin disabled</h1>
           <p className="text-sm text-slate-600 leading-relaxed">
+            <code className="bg-slate-200 px-1 rounded">ADMIN_EMAIL</code> と{" "}
             <code className="bg-slate-200 px-1 rounded">ADMIN_PASSWORD</code>{" "}
             を <code>.env.local</code> に設定してください。
           </p>

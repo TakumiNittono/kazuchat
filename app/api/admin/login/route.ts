@@ -1,27 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildAdminCookie, verifyPassword } from "@/lib/adminAuth";
+import {
+  buildAdminCookie,
+  isAdminConfigured,
+  verifyCredentials,
+} from "@/lib/adminAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  if (!process.env.ADMIN_PASSWORD) {
+  if (!isAdminConfigured()) {
     return NextResponse.json(
-      { ok: false, error: "ADMIN_PASSWORD not configured" },
+      { ok: false, error: "ADMIN_EMAIL and ADMIN_PASSWORD not configured" },
       { status: 503 },
     );
   }
 
-  let body: { password?: string };
+  let body: { email?: string; password?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ ok: false, error: "invalid json" }, { status: 400 });
   }
 
+  const email = body.email ?? "";
   const pw = body.password ?? "";
-  if (!verifyPassword(pw)) {
-    return NextResponse.json({ ok: false, error: "invalid password" }, { status: 401 });
+  if (!verifyCredentials(email, pw)) {
+    return NextResponse.json({ ok: false, error: "invalid credentials" }, { status: 401 });
   }
 
   const res = NextResponse.json({ ok: true });
