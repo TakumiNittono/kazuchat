@@ -2,6 +2,10 @@ import { NextRequest } from "next/server";
 import OpenAI from "openai";
 import { supabaseAdmin, type ChatMessageRow } from "@/lib/supabaseAdmin";
 import { SYSTEM_PROMPT } from "@/prompts/system";
+import {
+  CTA_MESSAGE,
+  CTA_TRIGGER_USER_MESSAGE_COUNT,
+} from "@/prompts/cta";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,6 +68,8 @@ export async function POST(req: NextRequest) {
     console.error("insert user msg failed", insertUserErr);
     return new Response("failed to save message", { status: 500 });
   }
+
+  const shouldFireCta = await evaluateCtaTrigger(anonUserId);
 
   const { data: history } = await supabaseAdmin
     .from("chat_messages")
@@ -129,6 +135,28 @@ export async function POST(req: NextRequest) {
         if (error) console.error("insert assistant msg failed", error);
       }
 
+      if (shouldFireCta) {
+        const { error } = await supabaseAdmin
+          .from("chat_messages")
+          .insert({
+            session_id: capturedSessionId,
+            role: "assistant",
+            content: CTA_MESSAGE,
+          });
+        if (error) {
+          console.error("insert cta msg failed", error);
+        } else {
+          send({ type: "cta", content: CTA_MESSAGE });
+          const { error: flagErr } = await supabaseAdmin
+            .from("anon_user_flags")
+            .upsert(
+              { anon_user_id: anonUserId, cta_shown_at: new Date().toISOString() },
+              { onConflict: "anon_user_id" },
+            );
+          if (flagErr) console.error("upsert cta flag failed", flagErr);
+        }
+      }
+
       send({ type: "done" });
       controller.close();
     },
@@ -141,4 +169,31 @@ export async function POST(req: NextRequest) {
       Connection: "keep-alive",
     },
   });
+}
+
+async function evaluateCtaTrigger(anonUserId: string): Promise<boolean> {
+  const { data: flag } = await supabaseAdmin
+    .from("anon_user_flags")
+    .select("cta_shown_at")
+    .eq("anon_user_id", anonUserId)
+    .maybeSingle();
+  if (flag?.cta_shown_at) return false;
+
+  const { data: sessions } = await supabaseAdmin
+    .from("chat_sessions")
+    .select("id")
+    .eq("anon_user_id", anonUserId);
+  const sessionIds = (sessions ?? []).map((s) => s.id);
+  if (sessionIds.length === 0) return false;
+
+  const { count, error } = await supabaseAdmin
+    .from("chat_messages")
+    .select("id", { count: "exact", head: true })
+    .in("session_id", sessionIds)
+    .eq("role", "user");
+  if (error) {
+    console.error("count user msgs failed", error);
+    return false;
+  }
+  return (count ?? 0) === CTA_TRIGGER_USER_MESSAGE_COUNT;
 }

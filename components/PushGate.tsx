@@ -92,7 +92,7 @@ export default function PushGate({ children }: { children: ReactNode }) {
       pending = Notification.requestPermission();
     } catch (err) {
       console.error("requestPermission threw", err);
-      setErrorMsg("通知許可のリクエストに失敗しました。");
+      setErrorMsg("Failed to request notification permission.");
       setPhase("ask");
       return;
     }
@@ -103,7 +103,7 @@ export default function PushGate({ children }: { children: ReactNode }) {
       }
       if (perm !== "granted") {
         // "default" — user dismissed the dialog.
-        setErrorMsg("通知を許可してください。");
+        setErrorMsg("Please allow notifications.");
         setPhase("ask");
         return;
       }
@@ -139,11 +139,12 @@ export default function PushGate({ children }: { children: ReactNode }) {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              通知を許可してください
+              Allow notifications
             </h1>
             <p className="text-slate-500 text-sm mt-2 leading-relaxed">
-              インストール完了のお知らせと、新機能のアップデートをお届けします。
-              iPhone では最初に一度だけ許可が必要です。
+              We&apos;ll let you know when your install is complete and ping
+              you about new features. On iPhone you only need to allow it
+              once.
             </p>
           </div>
         </header>
@@ -152,13 +153,13 @@ export default function PushGate({ children }: { children: ReactNode }) {
           <section className="rounded-3xl border border-sky-200 bg-sky-50 px-5 py-5 flex flex-col gap-4">
             <ul className="text-sm text-sky-900 space-y-2">
               <li className="flex gap-2">
-                <Dot /> すぐに「登録ありがとう！」通知が届きます
+                <Dot /> Get a &ldquo;Thanks for signing up!&rdquo; push right away
               </li>
               <li className="flex gap-2">
-                <Dot /> 新機能リリース時にプッシュでお知らせ
+                <Dot /> Be the first to hear about new features
               </li>
               <li className="flex gap-2">
-                <Dot /> いつでも iOS の設定からオフにできます
+                <Dot /> Turn it off any time in iOS Settings
               </li>
             </ul>
             <button
@@ -166,11 +167,11 @@ export default function PushGate({ children }: { children: ReactNode }) {
               disabled={phase === "working"}
               className="w-full rounded-2xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 transition-colors text-white font-medium py-4 shadow-lg shadow-sky-500/30"
             >
-              {phase === "working" ? "許可を要求中…" : "通知を許可する"}
+              {phase === "working" ? "Requesting permission…" : "Allow notifications"}
             </button>
             {errorMsg ? (
               <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-mono text-rose-900 break-all">
-                <div className="font-semibold mb-1">失敗の詳細</div>
+                <div className="font-semibold mb-1">Error details</div>
                 {errorMsg}
               </div>
             ) : null}
@@ -180,28 +181,28 @@ export default function PushGate({ children }: { children: ReactNode }) {
         {phase === "denied" ? (
           <section className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-5">
             <p className="font-medium text-amber-900">
-              通知がブロックされています
+              Notifications are blocked
             </p>
             <ol className="text-sm text-amber-900/90 mt-2 space-y-1 list-decimal pl-5 leading-relaxed">
-              <li>iPhone の「設定」アプリを開く</li>
-              <li>下にスクロールして「Chat with Marin」をタップ</li>
-              <li>「通知」→「通知を許可」をオン</li>
-              <li>このアプリに戻って再起動</li>
+              <li>Open the iPhone Settings app</li>
+              <li>Scroll down and tap &ldquo;Chat with Marin&rdquo;</li>
+              <li>Tap &ldquo;Notifications&rdquo; → turn &ldquo;Allow Notifications&rdquo; on</li>
+              <li>Come back to this app and relaunch it</li>
             </ol>
             <button
               onClick={() => setPhase("pass")}
               className="mt-4 w-full rounded-2xl bg-white border border-amber-300 text-amber-900 font-medium py-3 text-sm"
             >
-              このまま続ける（通知なし）
+              Continue without notifications
             </button>
           </section>
         ) : null}
 
         {phase === "granted" ? (
           <section className="rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-5 flex flex-col gap-3">
-            <p className="font-medium text-emerald-900">通知は許可済み</p>
+            <p className="font-medium text-emerald-900">Notifications enabled</p>
             <p className="text-sm text-emerald-800 leading-relaxed">
-              登録通知を送信しました。ロック画面を確認してみてください。
+              We&apos;ve sent you a welcome push. Check your lock screen!
             </p>
             <button
               onClick={async () => {
@@ -210,18 +211,18 @@ export default function PushGate({ children }: { children: ReactNode }) {
                 if (!r.ok) {
                   setErrorMsg(`[${r.stage}] ${r.message}`);
                 } else {
-                  setErrorMsg("再送しました。");
+                  setErrorMsg("Resent.");
                 }
               }}
               className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 text-sm"
             >
-              通知を再送する
+              Resend welcome push
             </button>
             <button
               onClick={() => setPhase("pass")}
               className="rounded-xl bg-white border border-emerald-300 text-emerald-800 font-medium px-4 py-2 text-sm"
             >
-              チャットへ進む
+              Continue to chat
             </button>
             {errorMsg ? (
               <p className="text-xs text-emerald-800">{errorMsg}</p>
@@ -232,17 +233,18 @@ export default function PushGate({ children }: { children: ReactNode }) {
         {phase === "unsupported" ? (
           <section className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-5">
             <p className="font-medium text-amber-900">
-              このデバイスでは通知が使えません
+              Push notifications aren&apos;t supported on this device
             </p>
             <p className="text-sm text-amber-900/90 mt-1 leading-relaxed">
-              iPhone の場合、<b>iOS 16.4 以降</b>
-              かつホーム画面に追加したアプリからの起動が必要です。下の診断を見て、iOS バージョンを確認してください。
+              On iPhone, you need <b>iOS 16.4 or later</b> and you must open
+              the app from the home-screen icon you just added. Check the
+              diagnostics below to confirm your iOS version.
             </p>
             <button
               onClick={() => setPhase("pass")}
               className="mt-4 w-full rounded-2xl bg-white border border-amber-300 text-amber-900 font-medium py-3 text-sm"
             >
-              そのままチャットへ進む
+              Continue to chat
             </button>
           </section>
         ) : null}

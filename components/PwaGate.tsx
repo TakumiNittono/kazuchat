@@ -260,6 +260,20 @@ function IosVideoSteps() {
             className="absolute inset-0 w-full h-full object-contain bg-slate-900"
           />
         )}
+        {idx === 0 ? (
+          <div
+            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 flex items-center"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 48 24"
+              className="w-10 h-6 text-red-500 drop-shadow-[0_2px_3px_rgba(220,38,38,0.6)] animate-bounce"
+              fill="currentColor"
+            >
+              <path d="M48 10H16v-6L0 12l16 8v-6h32z" />
+            </svg>
+          </div>
+        ) : null}
       </div>
 
       <div className="px-5 py-4">

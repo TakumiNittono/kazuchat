@@ -144,6 +144,7 @@ export default function ChatView() {
               const evt = JSON.parse(json) as
                 | { type: "session"; sessionId: string }
                 | { type: "delta"; delta: string }
+                | { type: "cta"; content: string }
                 | { type: "error"; message: string }
                 | { type: "done" };
 
@@ -158,6 +159,11 @@ export default function ChatView() {
                       : m,
                   ),
                 );
+              } else if (evt.type === "cta") {
+                setMessages((prev) => [
+                  ...prev,
+                  { id: uid(), role: "assistant", content: evt.content },
+                ]);
               } else if (evt.type === "error") {
                 setError(evt.message);
                 streamDone = true;
